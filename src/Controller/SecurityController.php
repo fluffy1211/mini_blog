@@ -12,10 +12,7 @@ class SecurityController extends AbstractController
     #[Route(path: '/login', name: 'app_login')]
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
-
-        // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
         return $this->render('security/login.html.twig', [
@@ -27,7 +24,7 @@ class SecurityController extends AbstractController
     #[Route(path: '/access-denied', name: 'app_access_denied')]
     public function accessDenied(): Response
     {
-        return $this->render('security/access_denied.html.twig', [], new Response('', Response::HTTP_FORBIDDEN));
+        return $this->render('bundles/TwigBundle/Exception/error403.html.twig', [], new Response('', Response::HTTP_FORBIDDEN));
     }
 
     #[Route(path: '/logout', name: 'app_logout')]
