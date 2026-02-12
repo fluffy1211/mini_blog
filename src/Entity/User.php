@@ -27,10 +27,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var list<string> The user roles
      */
     #[ORM\Column]
-    private array $roles = [
-        'ROLE_USER',
-        'ROLE_ADMIN',
-    ];
+    private array $roles = ['ROLE_USER'];
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isActive = true;
 
     /**
      * @var string The hashed password
@@ -262,6 +262,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
 
         return $this;
     }

@@ -1,0 +1,113 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ post.title }} - Mini Blog{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm border-0" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm border-0" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    {# ── Back link ── #}
+    <a href="{{ path('app_home') }}" class="btn btn-outline-secondary rounded-3 px-3 mb-4">
+        <i class="bi bi-arrow-left me-1"></i> Retour aux articles
+    </a>
+
+    {# ── Article card ── #}
+    <div class="card border-0 shadow-sm rounded-4 mb-5">
+        {% if post.picture %}
+            <img src="{{ post.picture }}" class="card-img-top rounded-top-4" alt="{{ post.title }}" style="max-height: 400px; object-fit: cover;">
+        {% endif %}
+        <div class="card-body p-4 p-md-5">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill fw-medium">
+                    <i class="bi bi-tag me-1"></i>{{ post.category ? post.category.name : 'Sans catégorie' }}
+                </span>
+                <span class="text-body-tertiary small">
+                    <i class="bi bi-calendar3 me-1"></i>{{ post.publishedAt ? post.publishedAt|date('d/m/Y à H:i') : 'N/A' }}
+                </span>
+            </div>
+            <h1 class="h2 fw-bold mb-3">{{ post.title }}</h1>
+            {% if post.user %}
+                <p class="text-body-secondary small mb-4">
+                    <i class="bi bi-person-circle me-1"></i> Par <strong>{{ post.user.firstName }} {{ post.user.lastName }}</strong>
+                </p>
+            {% endif %}
+            <div class="fs-6 lh-lg">
+                {{ post.content|nl2br }}
+            </div>
+        </div>
+    </div>
+
+    {# ── Comments section ── #}
+    <div class="mb-5">
+        <h3 class="h5 fw-bold mb-4">
+            <i class="bi bi-chat-dots me-2 text-primary"></i>Commentaires ({{ post.comments|length }})
+        </h3>
+
+        {% if post.comments is empty %}
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+                <p class="text-body-secondary mb-0"><i class="bi bi-chat-left-text me-1"></i> Aucun commentaire pour le moment.</p>
+            </div>
+        {% else %}
+            <div class="d-flex flex-column gap-3">
+                {% for comment in post.comments %}
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-semibold small">
+                                    <i class="bi bi-person-circle me-1 text-primary"></i>
+                                    {{ comment.user.firstName }} {{ comment.user.lastName }}
+                                </span>
+                                <span class="text-body-tertiary small">
+                                    <i class="bi bi-clock me-1"></i>{{ comment.createdAt|date('d/m/Y à H:i') }}
+                                </span>
+                            </div>
+                            <p class="mb-0 text-body-secondary">{{ comment.content|nl2br }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    {# ── Add comment form (connected users only) ── #}
+    {% if app.user %}
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <h5 class="fw-semibold mb-3">
+                    <i class="bi bi-pencil-square me-2 text-success"></i>Ajouter un commentaire
+                </h5>
+                {{ form_start(commentForm) }}
+                    {{ form_widget(commentForm) }}
+                    <div class="d-grid mt-3">
+                        <button type="submit" class="btn btn-primary rounded-3 py-2">
+                            <i class="bi bi-send me-1"></i> Publier le commentaire
+                        </button>
+                    </div>
+                {{ form_end(commentForm) }}
+            </div>
+        </div>
+    {% else %}
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4 text-center">
+                <p class="text-body-secondary mb-2">Vous devez être connecté pour ajouter un commentaire.</p>
+                <a href="{{ path('app_login') }}" class="btn btn-outline-primary rounded-3 px-4">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Se connecter
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

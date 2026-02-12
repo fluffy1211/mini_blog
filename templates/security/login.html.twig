@@ -3,35 +3,43 @@
 {% block title %}Log in!{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
+<div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Sign in</h4>
-                </div>
-                <div class="card-body">
+        <div class="col-12 col-sm-10 col-md-6 col-lg-5 col-xl-4">
+
+            {# ── Header ── #}
+            <div class="text-center mb-4">
+                <span class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3" style="width:56px;height:56px;">
+                    <i class="bi bi-box-arrow-in-right fs-4"></i>
+                </span>
+                <h1 class="h4 fw-bold">Welcome back</h1>
+                <p class="text-body-secondary small mb-0">Sign in to your account</p>
+            </div>
+
+            {# ── Login card ── #}
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
                     <form method="post">
                         {% if error %}
-                            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                            <div class="alert alert-danger rounded-3 border-0 small">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
                         {% endif %}
 
                         {% if app.user %}
-                            <div class="alert alert-info">
-                                You are already logged in, please <a href="{{ logout_path() }}" class="alert-link">logout</a>
+                            <div class="alert alert-info rounded-3 border-0 small">
+                                You are already logged in, please <a href="{{ logout_path() }}" class="alert-link fw-semibold">logout</a>
                             </div>
                         {% endif %}
 
                         <div class="mb-3">
-                            <label for="username" class="form-label">Email</label>
-                            <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" required autofocus>
+                            <label for="username" class="form-label small fw-medium">Email</label>
+                            <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control rounded-3 py-2" autocomplete="email" required autofocus placeholder="you@example.com">
                         </div>
-                        
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" required>
+
+                        <div class="mb-4">
+                            <label for="password" class="form-label small fw-medium">Password</label>
+                            <input type="password" name="_password" id="password" class="form-control rounded-3 py-2" autocomplete="current-password" required placeholder="••••••••">
                         </div>
-                        
+
                         <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
 
                         {#
@@ -44,17 +52,18 @@
                             </div>
                         #}
 
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-lg btn-primary" type="submit">
+                        <div class="d-grid">
+                            <button class="btn btn-primary rounded-3 py-2 fw-semibold" type="submit">
                                 Sign in
                             </button>
                         </div>
                     </form>
                 </div>
-                <div class="card-footer text-center">
-                    <small class="text-muted">Don't have an account? <a href="{{ path('app_register') }}">Register</a></small>
+                <div class="card-footer bg-transparent border-0 text-center py-3">
+                    <small class="text-body-secondary">Don't have an account? <a href="{{ path('app_register') }}" class="fw-semibold text-decoration-none">Register</a></small>
                 </div>
             </div>
+
         </div>
     </div>
 </div>

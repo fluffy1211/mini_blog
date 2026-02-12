@@ -128,14 +128,9 @@ class Post
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        $this->publishedAt = new \DateTimeImmutable();
-    }
-
-    #[ORM\PrePersist]
-    #[ORM\PreUpdate]
-    public function setUpdatedAtValue(): void
-    {
-        $this->publishedAt = new \DateTimeImmutable();
+        if ($this->publishedAt === null) {
+            $this->publishedAt = new \DateTimeImmutable();
+        }
     }
 
     /**
