@@ -19,12 +19,26 @@
                     <h4 class="mb-0">Create New Post</h4>
                 </div>
                 <div class="card-body">
-                    {{ form_start(form) }}
-                        {{ form_widget(form) }}
+                    {{ form_start(postForm) }}
+                        {{ form_widget(postForm) }}
                         <div class="d-grid gap-2 mt-3">
                             <button type="submit" class="btn btn-primary btn-lg">Save Post</button>
                         </div>
-                    {{ form_end(form) }}
+                    {{ form_end(postForm) }}
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Create New Category</h4>
+                </div>
+                <div class="card-body">
+                    {{ form_start(categoryForm) }}
+                        {{ form_widget(categoryForm) }}
+                        <div class="d-grid gap-2 mt-3">
+                            <button type="submit" class="btn btn-success btn-lg">Save Category</button>
+                        </div>
+                    {{ form_end(categoryForm) }}
                 </div>
             </div>
         </div>
@@ -51,6 +65,32 @@
                                 <td><strong>{{ post.title }}</strong></td>
                                 <td>{{ post.content|length > 80 ? post.content|slice(0, 80) ~ '...' : post.content }}</td>
                                 <td>{{ post.publishedAt ? post.publishedAt|date('M d, Y') : 'N/A' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+
+            <h2 class="mt-4">All Categories</h2>
+            {% if categories is empty %}
+                <div class="alert alert-info">No categories yet.</div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in categories %}
+                            <tr>
+                                <th scope="row">{{ category.id }}</th>
+                                <td><strong>{{ category.name }}</strong></td>
+                                <td>{{ category.description ?? 'N/A' }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
