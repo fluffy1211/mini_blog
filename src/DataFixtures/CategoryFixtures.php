@@ -4,10 +4,15 @@ namespace App\DataFixtures;
 
 use App\Entity\Category;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class CategoryFixtures extends Fixture
+class CategoryFixtures extends Fixture implements FixtureGroupInterface
 {
+    public static function getGroups(): array
+    {
+        return ['category', 'base'];
+    }
     public function load(ObjectManager $manager): void
     {
         $categories = [
