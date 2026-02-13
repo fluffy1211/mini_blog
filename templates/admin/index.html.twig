@@ -137,7 +137,8 @@
                                 <tr class="bg-body-secondary text-body-secondary small text-uppercase">
                                     <th scope="col" class="fw-semibold ps-4 py-3">ID</th>
                                     <th scope="col" class="fw-semibold py-3">Nom</th>
-                                    <th scope="col" class="fw-semibold pe-4 py-3">Description</th>
+                                    <th scope="col" class="fw-semibold py-3">Description</th>
+                                    <th scope="col" class="fw-semibold pe-4 py-3 text-end">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="border-top-0">
@@ -145,7 +146,20 @@
                                 <tr>
                                     <th scope="row" class="ps-4 text-body-secondary fw-normal">{{ category.id }}</th>
                                     <td class="fw-semibold">{{ category.name }}</td>
-                                    <td class="pe-4 text-body-secondary">{{ category.description ?? 'N/A' }}</td>
+                                    <td class="text-body-secondary">{{ category.description ?? 'N/A' }}</td>
+                                    <td class="pe-4 text-end">
+                                        <div class="d-inline-flex gap-1">
+                                            <a href="{{ path('app_admin_category_edit', {id: category.id}) }}" class="btn btn-sm btn-outline-warning rounded-3 px-2" title="Modifier">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <form action="{{ path('app_admin_category_delete', {id: category.id}) }}" method="post" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete-category-' ~ category.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-3 px-2" title="Supprimer">
+                                                    <i class="bi bi-trash3"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

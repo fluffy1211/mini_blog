@@ -52,7 +52,8 @@ final class AdminController extends AbstractController
                         $this->getParameter('kernel.project_dir').'/public/uploads',
                         $newFilename
                     );
-                    $post->setPicture('/uploads/'.$newFilename);
+                    // Store only the filename, getPictureUrl() will add the /uploads/ prefix
+                    $post->setPicture($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Erreur lors du téléchargement de l\'image.');
                 }
@@ -102,9 +103,9 @@ final class AdminController extends AbstractController
             $imageFile = $form->get('imageFile')->getData();
 
             if ($imageFile) {
-                // Supprimer l'ancienne image si elle existe
-                if ($post->getPicture()) {
-                    $oldImagePath = $this->getParameter('kernel.project_dir').'/public'.$post->getPicture();
+                // Supprimer l'ancienne image si elle existe et que ce n'est pas une URL
+                if ($post->getPicture() && !str_starts_with($post->getPicture(), 'http://') && !str_starts_with($post->getPicture(), 'https://')) {
+                    $oldImagePath = $this->getParameter('kernel.project_dir').'/public/uploads/'.$post->getPicture();
                     if (file_exists($oldImagePath)) {
                         unlink($oldImagePath);
                     }
@@ -119,7 +120,8 @@ final class AdminController extends AbstractController
                         $this->getParameter('kernel.project_dir').'/public/uploads',
                         $newFilename
                     );
-                    $post->setPicture('/uploads/'.$newFilename);
+                    // Store only the filename, getPictureUrl() will add the /uploads/ prefix
+                    $post->setPicture($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'Erreur lors du téléchargement de l\'image.');
                 }
@@ -236,5 +238,45 @@ final class AdminController extends AbstractController
         }
 
         return $this->redirectToRoute('app_admin_comments');
+    }
+
+    #[Route('/category/{id}/edit', name: 'app_admin_category_edit')]
+    public function editCategory(
+        Category $category,
+        Request $request,
+        EntityManagerInterface $entityManager,
+    ): Response
+    {
+        $form = $this->createForm(CategoryType::class, $category);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Catégorie modifiée avec succès !');
+            return $this->redirectToRoute('app_admin');
+        }
+
+        return $this->render('admin/edit_category.html.twig', [
+            'category' => $category,
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/category/{id}/delete', name: 'app_admin_category_delete', methods: ['POST'])]
+    public function deleteCategory(
+        Category $category,
+        Request $request,
+        EntityManagerInterface $entityManager,
+    ): Response
+    {
+        if ($this->isCsrfTokenValid('delete-category-' . $category->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($category);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Catégorie supprimée avec succès !');
+        }
+
+        return $this->redirectToRoute('app_admin');
     }
 }
