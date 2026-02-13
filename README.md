@@ -97,26 +97,21 @@ Download and install MySQL from [https://dev.mysql.com/downloads/installer/](htt
 
 ### 4. Configure Environment
 
-Copy the `.env` file and configure your database:
+Copy the `.env.example` file to create your local environment configuration:
 
 ```bash
-cp .env .env.local
+cp .env.example .env.local
 ```
 
-Edit `.env.local` with your MySQL credentials:
+Edit `.env.local` with your actual credentials:
 
-```env
-# MySQL Configuration
+# MySQL Configuration - Update with your credentials
 DATABASE_URL="mysql://root:your_password@127.0.0.1:3306/mini_blog?serverVersion=8.0"
 ```
 
-Replace `your_password` with your MySQL root password (leave empty if no password is set).
-
-Set your `APP_SECRET`:
-
-```env
-APP_SECRET=your-secret-key-here
-```
+**Important:** 
+- Replace `your_password` with your MySQL root password (leave empty if no password is set)
+- **Never commit `.env.local`** - it's already in `.gitignore`
 
 ### 5. Create the Database and Run Migrations
 
