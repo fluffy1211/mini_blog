@@ -38,7 +38,6 @@ final class PostController extends AbstractController
             $entityManager->persist($comment);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Commentaire ajouté avec succès !');
             return $this->redirectToRoute('app_post_show', ['id' => $post->getId()]);
         }
 
