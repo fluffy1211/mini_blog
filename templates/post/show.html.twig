@@ -52,16 +52,16 @@
     {# ── Comments section ── #}
     <div class="mb-5">
         <h3 class="h5 fw-bold mb-4">
-            <i class="bi bi-chat-dots me-2 text-primary"></i>Commentaires ({{ post.comments|length }})
+            <i class="bi bi-chat-dots me-2 text-primary"></i>Commentaires ({{ comments|length }})
         </h3>
 
-        {% if post.comments is empty %}
+        {% if comments is empty %}
             <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
                 <p class="text-body-secondary mb-0"><i class="bi bi-chat-left-text me-1"></i> Aucun commentaire pour le moment.</p>
             </div>
         {% else %}
             <div class="d-flex flex-column gap-3">
-                {% for comment in post.comments %}
+                {% for comment in comments %}
                     <div class="card border-0 shadow-sm rounded-4">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-center mb-2">
