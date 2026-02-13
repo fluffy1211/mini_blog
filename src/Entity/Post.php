@@ -101,6 +101,25 @@ class Post
         return $this;
     }
 
+    /**
+     * Get the full URL or path for the picture
+     * Handles both local files (from uploads directory) and external URLs
+     */
+    public function getPictureUrl(): ?string
+    {
+        if ($this->picture === null) {
+            return null;
+        }
+
+        // Check if it's already a full URL
+        if (str_starts_with($this->picture, 'http://') || str_starts_with($this->picture, 'https://')) {
+            return $this->picture;
+        }
+
+        // Otherwise, it's a local file in the uploads directory
+        return '/uploads/' . $this->picture;
+    }
+
     public function getUser(): ?User
     {
         return $this->user;
