@@ -3,18 +3,23 @@
 namespace App\Controller;
 
 use App\Entity\Category;
+use App\Entity\Comment;
 use App\Entity\Post;
 use App\Form\CategoryType;
 use App\Form\PostType;
 use App\Repository\CategoryRepository;
+use App\Repository\CommentRepository;
 use App\Repository\PostRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/admin')]
 #[IsGranted('ROLE_ADMIN')]
@@ -26,6 +31,7 @@ final class AdminController extends AbstractController
         PostRepository $postRepository,
         CategoryRepository $categoryRepository,
         EntityManagerInterface $entityManager,
+        SluggerInterface $slugger,
     ): Response
     {
         $post = new Post();
@@ -33,6 +39,25 @@ final class AdminController extends AbstractController
         $postForm->handleRequest($request);
 
         if ($postForm->isSubmitted() && $postForm->isValid()) {
+            /** @var UploadedFile $imageFile */
+            $imageFile = $postForm->get('imageFile')->getData();
+
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir').'/public/uploads',
+                        $newFilename
+                    );
+                    $post->setPicture('/uploads/'.$newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Erreur lors du téléchargement de l\'image.');
+                }
+            }
+
             $post->setUser($this->getUser());
             $entityManager->persist($post);
             $entityManager->flush();
@@ -66,12 +91,40 @@ final class AdminController extends AbstractController
         Post $post,
         Request $request,
         EntityManagerInterface $entityManager,
+        SluggerInterface $slugger,
     ): Response
     {
         $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var UploadedFile $imageFile */
+            $imageFile = $form->get('imageFile')->getData();
+
+            if ($imageFile) {
+                // Supprimer l'ancienne image si elle existe
+                if ($post->getPicture()) {
+                    $oldImagePath = $this->getParameter('kernel.project_dir').'/public'.$post->getPicture();
+                    if (file_exists($oldImagePath)) {
+                        unlink($oldImagePath);
+                    }
+                }
+
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$imageFile->guessExtension();
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('kernel.project_dir').'/public/uploads',
+                        $newFilename
+                    );
+                    $post->setPicture('/uploads/'.$newFilename);
+                } catch (FileException $e) {
+                    $this->addFlash('error', 'Erreur lors du téléchargement de l\'image.');
+                }
+            }
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Article modifié avec succès !');
@@ -124,5 +177,64 @@ final class AdminController extends AbstractController
         }
 
         return $this->redirectToRoute('app_admin_users');
+    }
+
+    #[Route('/comments', name: 'app_admin_comments')]
+    public function comments(CommentRepository $commentRepository): Response
+    {
+        return $this->render('admin/comments.html.twig', [
+            'pendingComments' => $commentRepository->findPending(),
+            'approvedComments' => $commentRepository->findBy(['isApproved' => true], ['createdAt' => 'DESC']),
+        ]);
+    }
+
+    #[Route('/comment/{id}/approve', name: 'app_admin_comment_approve', methods: ['POST'])]
+    public function approveComment(
+        Comment $comment,
+        Request $request,
+        EntityManagerInterface $entityManager,
+    ): Response {
+        if ($this->isCsrfTokenValid('approve-comment-' . $comment->getId(), $request->request->get('_token'))) {
+            $comment->setIsApproved(true);
+            $comment->setStatus('approuvé');
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Le commentaire a été approuvé.');
+        }
+
+        return $this->redirectToRoute('app_admin_comments');
+    }
+
+    #[Route('/comment/{id}/disapprove', name: 'app_admin_comment_disapprove', methods: ['POST'])]
+    public function disapproveComment(
+        Comment $comment,
+        Request $request,
+        EntityManagerInterface $entityManager,
+    ): Response {
+        if ($this->isCsrfTokenValid('disapprove-comment-' . $comment->getId(), $request->request->get('_token'))) {
+            $comment->setIsApproved(false);
+            $comment->setStatus('rejeté');
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Le commentaire a été désapprouvé.');
+        }
+
+        return $this->redirectToRoute('app_admin_comments');
+    }
+
+    #[Route('/comment/{id}/delete', name: 'app_admin_comment_delete', methods: ['POST'])]
+    public function deleteComment(
+        Comment $comment,
+        Request $request,
+        EntityManagerInterface $entityManager,
+    ): Response {
+        if ($this->isCsrfTokenValid('delete-comment-' . $comment->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($comment);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Le commentaire a été supprimé.');
+        }
+
+        return $this->redirectToRoute('app_admin_comments');
     }
 }

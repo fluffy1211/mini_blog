@@ -1,0 +1,151 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin - Gestion des commentaires{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm border-0" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+
+    {# ── Page header ── #}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-5">
+        <div>
+            <h1 class="h3 fw-bold mb-1"><i class="bi bi-chat-left-dots me-2 text-primary"></i>Gestion des commentaires</h1>
+            <p class="text-body-secondary mb-0 small">Approuvez ou rejetez les commentaires des utilisateurs</p>
+        </div>
+        <a href="{{ path('app_admin') }}" class="btn btn-outline-secondary rounded-3 px-3">
+            <i class="bi bi-arrow-left me-1"></i> Retour au tableau de bord
+        </a>
+    </div>
+
+    {# ── Pending comments ── #}
+    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+        <div class="card-header bg-transparent border-0 px-4 pt-4 pb-0">
+            <h5 class="fw-semibold mb-0">
+                <i class="bi bi-hourglass-split me-2 text-warning"></i>Commentaires en attente
+                <span class="badge bg-warning text-dark rounded-pill ms-2">{{ pendingComments|length }}</span>
+            </h5>
+        </div>
+        {% if pendingComments is empty %}
+            <div class="card-body px-4 pb-4">
+                <div class="alert alert-info rounded-3 border-0 mb-0">Aucun commentaire en attente de validation.</div>
+            </div>
+        {% else %}
+            <div class="table-responsive mb-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr class="bg-body-secondary text-body-secondary small text-uppercase">
+                            <th scope="col" class="fw-semibold ps-4 py-3">Auteur</th>
+                            <th scope="col" class="fw-semibold py-3">Article</th>
+                            <th scope="col" class="fw-semibold py-3">Commentaire</th>
+                            <th scope="col" class="fw-semibold py-3">Date</th>
+                            <th scope="col" class="fw-semibold pe-4 py-3 text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        {% for comment in pendingComments %}
+                        <tr>
+                            <td class="ps-4 fw-semibold small">
+                                <i class="bi bi-person-circle me-1 text-primary"></i>
+                                {{ comment.user.firstName }} {{ comment.user.lastName }}
+                            </td>
+                            <td class="small">
+                                <a href="{{ path('app_post_show', {id: comment.post.id}) }}" class="text-decoration-none">
+                                    {{ comment.post.title|length > 30 ? comment.post.title|slice(0, 30) ~ '...' : comment.post.title }}
+                                </a>
+                            </td>
+                            <td class="text-body-secondary small">{{ comment.content|length > 80 ? comment.content|slice(0, 80) ~ '...' : comment.content }}</td>
+                            <td class="text-body-secondary small">{{ comment.createdAt|date('d/m/Y H:i') }}</td>
+                            <td class="pe-4 text-end">
+                                <div class="d-inline-flex gap-1">
+                                    <form action="{{ path('app_admin_comment_approve', {id: comment.id}) }}" method="post" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('approve-comment-' ~ comment.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-success rounded-3 px-2" title="Approuver">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </form>
+                                    <form action="{{ path('app_admin_comment_delete', {id: comment.id}) }}" method="post" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete-comment-' ~ comment.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-3 px-2" title="Supprimer">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+
+    {# ── Approved comments ── #}
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-transparent border-0 px-4 pt-4 pb-0">
+            <h5 class="fw-semibold mb-0">
+                <i class="bi bi-check-circle me-2 text-success"></i>Commentaires approuvés
+                <span class="badge bg-success rounded-pill ms-2">{{ approvedComments|length }}</span>
+            </h5>
+        </div>
+        {% if approvedComments is empty %}
+            <div class="card-body px-4 pb-4">
+                <div class="alert alert-info rounded-3 border-0 mb-0">Aucun commentaire approuvé.</div>
+            </div>
+        {% else %}
+            <div class="table-responsive mb-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr class="bg-body-secondary text-body-secondary small text-uppercase">
+                            <th scope="col" class="fw-semibold ps-4 py-3">Auteur</th>
+                            <th scope="col" class="fw-semibold py-3">Article</th>
+                            <th scope="col" class="fw-semibold py-3">Commentaire</th>
+                            <th scope="col" class="fw-semibold py-3">Date</th>
+                            <th scope="col" class="fw-semibold pe-4 py-3 text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        {% for comment in approvedComments %}
+                        <tr>
+                            <td class="ps-4 fw-semibold small">
+                                <i class="bi bi-person-circle me-1 text-primary"></i>
+                                {{ comment.user.firstName }} {{ comment.user.lastName }}
+                            </td>
+                            <td class="small">
+                                <a href="{{ path('app_post_show', {id: comment.post.id}) }}" class="text-decoration-none">
+                                    {{ comment.post.title|length > 30 ? comment.post.title|slice(0, 30) ~ '...' : comment.post.title }}
+                                </a>
+                            </td>
+                            <td class="text-body-secondary small">{{ comment.content|length > 80 ? comment.content|slice(0, 80) ~ '...' : comment.content }}</td>
+                            <td class="text-body-secondary small">{{ comment.createdAt|date('d/m/Y H:i') }}</td>
+                            <td class="pe-4 text-end">
+                                <div class="d-inline-flex gap-1">
+                                    <form action="{{ path('app_admin_comment_disapprove', {id: comment.id}) }}" method="post" class="d-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('disapprove-comment-' ~ comment.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-warning rounded-3 px-2" title="Désapprouver">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                    <form action="{{ path('app_admin_comment_delete', {id: comment.id}) }}" method="post" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete-comment-' ~ comment.id) }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-3 px-2" title="Supprimer">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
